@@ -3,6 +3,14 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    const zig_webui = b.dependency("zig_webui", .{
+        .target = target,
+        .optimize = optimize,
+        .enable_tls = false, // whether enable tls support
+        .is_static = true, // whether static link
+    });
+
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
@@ -14,6 +22,7 @@ pub fn build(b: *std.Build) void {
         .root_module = exe_mod,
     });
 
+    exe.root_module.addImport("webui", zig_webui.module("webui"));
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
